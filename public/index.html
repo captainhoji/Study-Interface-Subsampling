@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+	<title>Making Trends More Accessible</title>
+	<link href="css/jquery-ui.min.css" rel="stylesheet" type="text/css">
+	<link href="css/bootstrap-slider.min.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+	<link rel="stylesheet" href="css/blockrain.css">
+	<link href="css/starter-template.css" rel="stylesheet">
+	<link href="css/style.css" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="css/distributionbuilder.css">
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="js/blockrain.jquery.min.js"></script>
+	<script type="text/javascript" src="js/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="js/purl.js"></script>
+	<script type="text/javascript" src="js/jquery.validate.min.js"></script>
+	<script type="text/javascript" src="js/sortable.min.js"></script>
+	<script type="text/javascript" src="js/jquery.csv.js"></script>
+	<script>$.fn.slider = null</script>
+	<script type="text/javascript" src="js/bootstrap-slider.min.js"></script>
+	<script src="js/distributionbuilder.min.js"></script>
+	<link rel="stylesheet" href="css/flat-light/jquery-ui-1.10.4.custom.min.css" />
+	<link rel="stylesheet" href="ev-style.css">
+	<!-- main script for study -->		
+</head>
+
+<body>
+<center>
+	<h5 style="color:red;">DO NOT REFRESH, GO BACK, OR CLOSE PAGE UNTIL THE END OF THE EXPERIMENT</h5>
+</center>
+<div class="container">
+	<div id="consent" class="col-sm-offset-1 col-sm-10" style="padding-top: 25px;">
+		<center style='text-align: left;'>
+			<h3>Making Line Charts More Accessible to Blind People</h3>
+			<p>This experiment is part of a research project on making line charts more accessible to blind people. 
+			<br/> You will listen to line charts, answer questions, and draw the line charts that you heard.
+			<br/> Do not use external resources. 
+			<br/>
+			<br/><b style="color:red;">IMPORTANT: The quality of your answer will impact the reward.</b>
+			<br/>
+			<br/>This experiment involves <b style="color:blue;">sound</b>, so you need <b style="color:blue;">speakers or headphones</b> to participate.
+			<br/>
+			<br/>Note: Internet Explorer is <b style="color:red;">NOT</b> supported. Chrome is recommended. Otherwise you will not be able to complete this experiment.
+
+			</p>
+
+		</center>
+		<center>
+			<h3>Study Consent Form</h3>
+		</center>
+		<br/> By clicking “I agree” below, you confirm that you understand what the project is about and how and why it is being done.
+		<br/> Should you have any questions concerning this project, please contact Jiho Kim (kim999@wisc.edu) or Yea-seul Kim (yeaseul.kim@cs.wisc.edu).
+		<br/>
+		<br/> <b style="color:red;">Please confirm by clicking “I agree.”</b> Please print this page for your records.
+		<form id=consent_form target="hiddenFrame">
+			<div class="form-group row">
+				<div class="checkbox">
+					<center>
+						<label>
+							<input type=checkbox id=consent_checkbox name=consent_checkbox value="" required>I agree to this consent form</label>
+					</center>
+				</div>
+			</div>
+			<div class="form-group row">
+				<center>
+					<input type=submit id=submit_consent value=Continue class="btn btn-default" />
+				</center>
+			</div>
+		</form>
+	</div>
+</div>
+<div id="demographicSurvey" class="container">
+	<form id="demographicSurvey_form" target="hiddenFrame">
+		<div class="row">
+			<h3> Demographic Survey </h3>
+			<h4>Provide basic information about yourself below. </h4>
+		</div>
+		<div class="row">
+			<p id="D0"> 1. How do you identify your gender? </p> 
+			<div class="col-sm-offset-1 col-sm-8">
+				<input type="radio" id="radio_male" name="gender" value="male" required>
+				<label for="radio_male">Male</label><br>
+				<input type="radio" id="radio_female" name="gender" value="female">
+				<label for="radio_female">Female</label><br>
+				<input type="radio" id="radio_nonBinary" name="gender" value="non_binary">
+				<label for="radio_nonBinary">Non-binary</label><br>
+				<input type="radio" id="radio_noAnswer" name="gender" value="no_answer">
+				<label for="radio_noAnswer">Prefer not to say</label>
+			</div>
+		</div>
+		<div class="row">
+			<p id="D1"> 2. How old are you? </p>
+			<div class="col-sm-offset-1 col-sm-8">
+				<p> 
+					<input type="text" id="response_age" required/>
+				</p>
+			</div>
+		</div>
+		<div class="row">
+			<p id="D2"> 3. What is your education level? </p>
+			<div class="col-sm-offset-1 col-sm-8">
+				<p> 
+					<input type="text" id="response_education" required/>
+				</p>
+			</div>
+		</div>
+		<div class="row">
+			<p id="D3"> 4. Is English your native language? </p>
+			<div class="col-sm-offset-1 col-sm-8">
+				<input type="radio" id="radio_yes" name="language" value="yes" required>
+				<label for="radio_yes">Yes</label><br>
+				<input type="radio" id="radio_no" name="language" value="no">
+				<label for="radio_no">No</label><br>			
+			</div>
+		</div>
+		<center>
+			<input type=submit value=Submit class="btn btn-default" />
+	  </center>
+	</form>
+</div>
+<div id="stimuli" class="container">
+	<div class="col-sm-offset-1 col-sm-10" style="padding-top: 25px;">
+		<h3 id="stimuli_title">Practice Task</h3>
+		<p> Read the chart using <b style="color:red;">left(←) and right(→) arrow keys</b> or by clicking buttons below. You need <b style="color:red;">speakers/headphones</b>. Try to draw line chart in your head. You have 5 minutes.</p> 
+		<br/><br/>
+		<p id="chart_description"></p>
+		<p>The first number is <b style="color:blue;" id="chart_labelx"></b> and the second number is <b style="color:blue;" id="chart_labely"></b></p>
+		<br/>
+		<center>
+			<button type="button" id="utter_prev_button"><- Play Previous Point</button>
+			<button type="button" id="utter_next_button">Play Next Point -></button>
+			<br/>
+			<button type="button" id="rate_decrease_button">Slower speech</button>Rate of speech: <b id="utterRate">1</b><button type="button" id="rate_increase_button">Faster speech</button>
+			<br/>
+			<h3 id="timer_text" style='text-align: center'></h3>
+			<button type="button" id="skipbutton"></button>
+		</center>
+	</div>
+</div>
+<div id="readyPages" class="container">
+	<div id="readyPage-tutorial">
+		<h3>Instructions<h3>
+		<center style="text-align: left;">
+			<p>
+				This experiment consists of a total of five tasks, including a practice task. 
+				<br/>
+				<br/>In the next page, you will listen to an <b style="color:red;">audio version of line chart</b>. 
+				<br/>Try to draw the line chart in your head. 
+				<br/>You have 5 minutes to listen to the line chart. 
+				<br/>Then, you will answer a few questions and actually draw the chart.
+				<br/>
+				<br/>You can use <b style="color:red;">arrow keys</b> on your keyboard to read the chart. Also, you can control the speed of speech by clicking buttons.
+			</p>
+		</center>
+	</div>
+	<div id="readyPage-0">
+		<center><p> You have completed the practice task. 
+			<br/>The following four tasks will be similar to the practice task. 
+			<br/>However, you will be presented with different charts and different questions.
+			<br/>
+			<br/>Please click the button below to start the first real task.</p></center>
+	</div>
+	<div id="readyPage-1">
+		<center><p>You have completed the first task.
+			<br/>
+			<br/>Please click the button below to start the second task. </p></center>
+	</div>
+	<div id="readyPage-2">
+		<center><p>You have completed the second task.
+			<br/>
+			<br/>Please click the button below to start the third task. </p></center>
+	</div>
+	<div id="readyPage-3">
+		<center><p>You have completed the third task.
+			<br/>
+			<br/>Please click the button below to start the last task. </p></center>
+	</div>
+	<center>
+			<button id="next_button">Click here to start task</button>
+	</center>
+</div>
+
+<div class="container">
+	<div id="assessment" style="padding-top: 25px;">
+		<h3 id="assessment_title"> Practice Task </h3>
+		<div class="container" id="canvasContainer">
+			<p id="Q7">Please draw the line chart based on your memory. You can use a mouse or a mousepad to draw the line on the grid below. 
+				<br/> <b style="color: red">Click and drag the cursor on the grid to draw the line. </b> </p>
+			<br/>
+			<p> <b>DO NOT</b> attempt to go back to the previous pages. You must rely on your memory. 
+				<br/>Please make your best guess.</p>
+			<br/>
+			<p>When you are done, click the "I'm Done" button. If you want to reset and try again, click the "Try Again" Button.</p>
+			<div id="canvasDrawing">
+				<div id="canvasDrawingInner">
+					 <svg></svg>
+				</div>
+			</div>
+			<div id="lineButtons"> <br>
+				<center>
+					<button class="btn btn-success" disabled="disabled" id="canvasSubmit">I'm Done</button>
+					<button class="btn btn-danger" id="canvasClear">Try Again</button>
+				</center>
+			</div>
+		</div>
+	</div>
+</div>
+<div style="display: none">
+	<p id="S1Q0"> What is the military expenditure in the year 1997?</p>
+	<p id="S1Q1"> Which year had the military expenditure closest to 7 billion?</p>
+	<p id="S1Q2"> In what year was the military expenditure the smallest?</p>
+	<p id="S1Q3"> What is the average military expenditure?</p>
+	<p id="S1Q4"> What is the range of the military expenditure? </p>
+	<p id="S1Q5"> Please describe the trend of the chart in detail. In other words, describe how the military expenditure changes with year.</p>
+	<p id="S2Q0"> What is the SPM in the year 1927?</p>
+	<p id="S2Q1"> Which year had the SPM closest to 200?</p>
+	<p id="S2Q2"> Wich year had the highest SPM?</p>
+	<p id="S2Q3"> What is the average SPM?</p>
+	<p id="S2Q4"> What is the range of SPM? </p>
+	<p id="S2Q5"> Please describe the trend of the chart in detail. In other words, describe how SPM changes with year.</p>
+	<p id="S3Q0"> What is the beer consumption in the year 1958?</p>
+	<p id="S3Q1"> Which year had the beer consumption closest to 2.75?</p>
+	<p id="S3Q2"> What is the highest beer consumption recorded?</p>
+	<p id="S3Q3"> What is the average beer consumption?</p>
+	<p id="S3Q4"> Which years does the chart show? Your answer can be in the format of "1900 to 2000".</p>
+	<p id="S3Q5"> Please describe the trend of the chart in detail. In other words, describe how the beer consumption changes with year.</p>
+	<p id="S4Q0"> What is the GDP per capita in the year 1979?</p>
+	<p id="S4Q1"> Which year had the GDP per capita closest to 10 thousand? </p>
+	<p id="S4Q2"> What is the lowest GDP per capita in the chart? </p>
+	<p id="S4Q3"> What is the average GDP per capita? </p>
+	<p id="S4Q4"> What is the range of the GDP per capita? </p>
+	<p id="S4Q5"> Please describe the trend of the chart in detail. In other words, describe how the GDP per capita changes with year.</p>
+</div>
+<div class="container">
+	<div id="feedback" class="col-sm-offset-1 col-sm-10" style="padding-top: 25px">
+		<form id="feedback_form" target="hiddenFrame">
+				<div class="row">
+					<h4> Feedback and Comments </h4>
+					<p> You have successfully completed all the tasks. In this section, we ask you to provide feedback and comments regarding your experience. Your input will be used to improve the experiment setup in the future. </p>
+				</div>
+				<div class="row">
+					<p>Was there anything about the experiment that you had trouble understanding?</p>
+					<div class="col-sm-offset-1 col-sm-8">
+						<p> 
+							<textarea id="response_feedback_0" rows="4" cols="50" wrap="soft" required></textarea>
+						</p>
+					</div>
+				</div>
+				<div class="row">
+					<p>Did you experience any technical inconvenience during the experiment? If yes, please describe what you experienced.</p>
+					<div class="col-sm-offset-1 col-sm-8">
+						<p> 
+							<textarea id="response_feedback_1" rows="4" cols="50" wrap="soft" required></textarea>
+						</p>
+					</div>
+				</div>
+				<div class="row">
+					<p>Please provide any additional comments that you have.</p>
+					<div class="col-sm-offset-1 col-sm-8">
+						<p> 
+							<textarea id="response_feedback_2" rows="4" cols="50" wrap="soft" required></textarea>
+						</p>
+					</div>
+				</div>			
+				<center>
+					<div id="feedback_error" class="error-message"></div>
+					<input type=submit value=Submit class="btn btn-default" />
+			  </center>
+			</form>
+	</div>
+</div>
+<div class="container">
+	<div id="confirmation">
+		<center><p>This is the last step of the experiment. Please copy and paste the following survey code to the MTurk survey page (the page where you found the link to this survey).</p>
+			<p>We will use the survey code to confirm that you have actually completed the survey.</p>
+			<br/>
+			<p>Your survey code is <b id="surveyCode" style="color:red;"></b></p>
+			<br/>
+			<p>
+			<form id=confirmation_form target="hiddenFrame">
+				<div class="form-group row">
+					<div class="checkbox">
+						<center>
+							<p>If you submitted your survey code in MTurk, click below.</p>
+							<label>
+								<input type=checkbox id=confirmation_checkbox name=confirmation_checkbox value="" required>I have copied and pasted and submitted the above survey code.</label>
+						</center>
+					</div>
+				</div>
+				<div class="form-group row">
+					<center>
+						<input type=submit id=submit_confirmation value=Continue class="btn btn-default" />
+					</center>
+				</div>
+			</form>
+		</center>
+	</div>
+</div>
+<div class="container">
+	<div id="thankyou">
+			<center><p>This is the end of the experiment. Thank you for participating!
+				<br/>You may exit this page now. 
+			</p>
+			</center>
+	</div>
+</div>
+<div class="container" id="errorMessage" style="padding-top: 25px;">
+	<h5 id="error"></h5>
+</div>	
+
+<iframe name="hiddenFrame" width="0" height="0" border="0" style="display: none;"></iframe>
+<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="https://cdn.jsdelivr.net/lodash/4.11.2/lodash.js"></script>
+<!-- <script src="js/line_ev.js"></script>
+<script src="js/canvas.js"></script> -->
+<script type="module" src="js/main.js"></script> 
+<script type="module">
+	import {main} from "./js/main.js";
+	$(document).ready(main);
+</script>
+</body>
+<pre id="s0-csv" style="display:none">Year,Age
+1950,43.5
+1951,43.6
+1952,43.7
+1953,43.8
+1954,44
+1955,44.1
+1956,44.2
+1957,44.3
+1958,44.5
+1959,44.5
+1960,44.5
+1961,44.5
+1962,44.5
+1963,44.6
+1964,46.7
+1965,48.9
+1966,51.1
+1967,53.3
+1968,55.5
+1969,56.7
+1970,58
+1971,59.2
+1972,60.4
+1973,61.7
+1974,62.4
+1975,63.2
+1976,64
+1977,64.7
+1978,65.5
+1979,66
+1980,66.4
+1981,66.9
+1982,67.3
+1983,67.8
+1984,68
+1985,68.2
+1986,68.5
+1987,68.7
+1988,68.9
+1989,69
+1990,69.1
+1991,69.2
+1992,69.3
+1993,69.4
+1994,69.6
+1995,69.9
+1996,70.1
+1997,70.3
+1998,70.6
+1999,70.9
+2000,71.3
+2001,71.6
+2002,71.9
+2003,72.3
+2004,72.5
+2005,72.8
+2006,73.1
+2007,73.4
+2008,73.7
+2009,74
+2010,74.3
+2011,74.6
+2012,74.9
+2013,75.1
+2014,75.4
+2015,75.7
+2016,76
+2017,76.3
+2018,76.6
+2019,76.8
+2020,77
+</pre>

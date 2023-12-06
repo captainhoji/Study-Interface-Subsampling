@@ -1,0 +1,44 @@
+{
+	"users":{
+		count: int,
+		$uid: True
+	},
+	"survey": {
+		"$uid": {
+			"condition_order": [],
+			"stimuli_order": [],
+			"uid": uid,
+			"responses": [
+				{
+					timestamp: str,
+		            stimuli: stimuliOrder[sid-1],
+		            condition: conditionOrder[sid-1],
+		            time: time,
+		            order: 1-4,
+	                Q0: $("#response_Q0").val(),
+	                Q1: $("#response_Q1").val(),
+	                Q2: $("#response_Q2").val(),
+	                Q3: $("#response_Q3").val(),
+	                Q4: $("#response_Q4").val(),
+	                Q5: $("#response_Q5").val(),
+	                Q6: $("#response_Q6").val()
+		        },
+		        {
+		        	timestamp: ...
+		        	...
+		        },
+		        {
+
+		        },
+		        {
+
+		        }
+			],
+			"feedback": {
+				Q0:,
+				Q1:,
+				Q2:...
+			}
+		}
+	}
+}

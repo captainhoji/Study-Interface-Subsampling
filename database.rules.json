@@ -1,0 +1,21 @@
+{
+  "rules": {
+    "users": {
+      ".read": true,
+      "count": {
+        ".read": true,
+        ".write": "auth != null"
+      }, 
+      "$uid": {
+        ".read": true,
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    }, 
+    "survey": {
+      "$uid": {
+        ".read": true,  
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    }
+  }
+}
