@@ -41,7 +41,7 @@
 		<center style='text-align: left;'>
 			<h3>Making Line Charts More Accessible to Blind People</h3>
 			<p>This experiment is part of a research project on making line charts more accessible to blind people. 
-			<br/> You will listen to line charts, answer questions, and draw the line charts that you heard.
+			<br/> You will listen to some numeric data, and draw a line chart on the computer.
 			<br/> Do not use external resources. 
 			<br/>
 			<br/><b style="color:red;">IMPORTANT: The quality of your answer will impact the reward.</b>
@@ -52,9 +52,6 @@
 
 			</p>
 
-		</center>
-		<center>
-			<h3>Study Consent Form</h3>
 		</center>
 		<br/> By clicking “I agree” below, you confirm that you understand what the project is about and how and why it is being done.
 		<br/> Should you have any questions concerning this project, please contact Jiho Kim (kim999@wisc.edu) or Yea-seul Kim (yeaseul.kim@cs.wisc.edu).
@@ -121,6 +118,32 @@
 				<label for="radio_no">No</label><br>			
 			</div>
 		</div>
+		<div class="row">
+			<p id="D4"> 5. How often do you encounter and read charts and graphs such as a bar chart, line chart, and pie chart? </p>
+			<div class="col-sm-offset-1 col-sm-8">
+				<input type="radio" id="radio_verylow" name="encounter_frequency" value="0" required>
+				<label for="radio_verylow">Less than once a month</label><br>
+				<input type="radio" id="radio_low" name="encounter_frequency" value="1" required>
+				<label for="radio_low">Once a month</label><br>
+				<input type="radio" id="radio_medium" name="encounter_frequency" value="2" required>
+				<label for="radio_medium">Once a week</label><br>
+				<input type="radio" id="radio_high" name="encounter_frequency" value="3" required>
+				<label for="radio_high">Two or three times a week</label><br>
+				<input type="radio" id="radio_veryhigh" name="encounter_frequency" value="4" required>
+				<label for="radio_veryhigh">Once a day or more</label><br>			
+			</div>
+		</div>
+		<div class="row">
+			<p id="D5"> 6. Do you have any hearing or visual impairment? </p>
+			<div class="col-sm-offset-1 col-sm-8">
+				<input type="radio" id="radio_hearingImpairment" name="impairment" value="2" required>
+				<label for="radio_hearingImpairment">Yes, I have a hearing impairment.</label><br>
+				<input type="radio" id="radio_visualImpairment" name="impairment" value="1" required>
+				<label for="radio_visualImpairment">Yes, I have a visual impairment.</label><br>
+				<input type="radio" id="radio_noImpairment" name="impairment" value="0" required>
+				<label for="radio_noImpairment">No, I do not have any hearing or visual impairment.</label><br>
+			</div>
+		</div>
 		<center>
 			<input type=submit value=Submit class="btn btn-default" />
 	  </center>
@@ -129,17 +152,20 @@
 <div id="stimuli" class="container">
 	<div class="col-sm-offset-1 col-sm-10" style="padding-top: 25px;">
 		<h3 id="stimuli_title">Practice Task</h3>
-		<p> Read the chart using <b style="color:red;">left(←) and right(→) arrow keys</b> or by clicking buttons below. You need <b style="color:red;">speakers/headphones</b>. Try to draw line chart in your head. You have 5 minutes.</p> 
-		<br/><br/>
-		<p id="chart_description"></p>
-		<p>The first number is <b style="color:blue;" id="chart_labelx"></b> and the second number is <b style="color:blue;" id="chart_labely"></b></p>
+		<p> Clicking the "Start Playing" button will play a sequence of data points. You can only listen to the sequence <b style="color:red;">ONCE</b>. 
+			<br/> As you are listening, close your eyes and try to draw the line chart in your head. </p> 
+			<br/> Before clicking the "Start Playing" button, you can adjust the speed of voice by clicking the "Slower speech" and "Faster speech" buttons.
+		<br/>
+			<button type="button" id="rate_decrease_button">Slower speech</button>      Rate of speech:<b id="utterRate">1</b>      <button type="button" id="rate_increase_button">Faster speech</button>
+		<br/>
+		<br/>
+		<p><span id="chart_description"></span>, from <b style="color:blue;" id="chart_startTime"></b> to <b style="color:blue;" id="chart_endTime"></b>. You will listen to <b style="color:blue;" id="chart_samplesize"></b> data points.</p> 
+		<p>For each data point, the first number of is <b style="color:blue;" id="chart_labelx"></b> and the second number is <b style="color:blue;" id="chart_labely"></b></p>
 		<br/>
 		<center>
-			<button type="button" id="utter_prev_button"><- Play Previous Point</button>
-			<button type="button" id="utter_next_button">Play Next Point -></button>
 			<br/>
-			<button type="button" id="rate_decrease_button">Slower speech</button>Rate of speech: <b id="utterRate">1</b><button type="button" id="rate_increase_button">Faster speech</button>
-			<br/>
+			<button type="button" id="utter_start_button">Start Playing</button>
+			<br/> 
 			<h3 id="timer_text" style='text-align: center'></h3>
 			<button type="button" id="skipbutton"></button>
 		</center>
@@ -151,20 +177,20 @@
 		<center style="text-align: left;">
 			<p>
 				This experiment consists of a total of five tasks, including a practice task. 
+				<br/>In each task, you will:
 				<br/>
-				<br/>In the next page, you will listen to an <b style="color:red;">audio version of line chart</b>. 
-				<br/>Try to draw the line chart in your head. 
-				<br/>You have 5 minutes to listen to the line chart. 
-				<br/>Then, you will answer a few questions and actually draw the chart.
+				<br/>1. Listen to a number of data points <b style="color:red;">ONCE</b>.
+				<br/>     
+				<br/>2. Draw a line chart on the computer, based on your memory.
 				<br/>
-				<br/>You can use <b style="color:red;">arrow keys</b> on your keyboard to read the chart. Also, you can control the speed of speech by clicking buttons.
+				<br/>Please make sure you adjust the volume before continuing. 
 			</p>
 		</center>
 	</div>
 	<div id="readyPage-0">
 		<center><p> You have completed the practice task. 
-			<br/>The following four tasks will be similar to the practice task. 
-			<br/>However, you will be presented with different charts and different questions.
+			<br/>The next four tasks will be similar to the one you just did. 
+			<br/>However, you will be presented with different data.
 			<br/>
 			<br/>Please click the button below to start the first real task.</p></center>
 	</div>
@@ -192,10 +218,10 @@
 	<div id="assessment" style="padding-top: 25px;">
 		<h3 id="assessment_title"> Practice Task </h3>
 		<div class="container" id="canvasContainer">
-			<p id="Q7">Please draw the line chart based on your memory. You can use a mouse or a mousepad to draw the line on the grid below. 
-				<br/> <b style="color: red">Click and drag the cursor on the grid to draw the line. </b> </p>
+			<p id="Q7">Please draw the line chart based on your memory. You can use a mouse or a mousepad.
+				<br/> <b style="color: red">Click and drag the cursor on the grid to draw the line.</b> </p>
 			<br/>
-			<p> <b>DO NOT</b> attempt to go back to the previous pages. You must rely on your memory. 
+			<p> <b>DO NOT</b> go back to the previous pages. You must rely on your memory. 
 				<br/>Please make your best guess.</p>
 			<br/>
 			<p>When you are done, click the "I'm Done" button. If you want to reset and try again, click the "Try Again" Button.</p>
@@ -289,7 +315,7 @@
 				<div class="form-group row">
 					<div class="checkbox">
 						<center>
-							<p>If you submitted your survey code in MTurk, click below.</p>
+							<p>If you submitted your survey code in Prolific, click below.</p>
 							<label>
 								<input type=checkbox id=confirmation_checkbox name=confirmation_checkbox value="" required>I have copied and pasted and submitted the above survey code.</label>
 						</center>

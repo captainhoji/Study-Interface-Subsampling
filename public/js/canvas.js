@@ -14,26 +14,38 @@ var show_agg = true;
 
 //var feedback_call = feedback_options[2].call;
 
-export function make_experiment(dataset) {
+export function make_experiment(dataset, dataset_label) {
   d3.select("svg").selectAll("*").remove();
   d3.select("#canvasSubmit").attr("disabled", false);
 
-  d3.csv(dataset.true_values,
-    _.partial(parse_row, dataset),
-    function(error, actual_data) {
-      var true_values = _.zip(_(actual_data).map(dataset.x_prop).value(),
-      _(actual_data).map(dataset.y_prop).value());
-      chart = new d3.line_ev(true_values, aggregate_data, dataset, options);
-      chart.render_chart(960, 500, d3.select("svg"));
-      d3.select("#canvasClear").on("click", function () {
-        d3.select("#canvasSubmit").attr("disabled", false);
-        d3.select("svg").selectAll("*").remove();
-        d3.selectAll('.feedback a').attr("class", "abled")
-        d3.selectAll('.show_agg a').attr("class", "abled")
-        document.getElementById('canvasSubmit').innerHTML = "I'm done"
-        make_experiment(dataset);
-      });
-    });
+  // d3.csv(dataset.true_values,
+  //   _.partial(parse_row, dataset),
+  //   function(error, actual_data) {
+  //     var true_values = _.zip(_(actual_data).map(dataset.x_prop).value(),
+  //     _(actual_data).map(dataset.y_prop).value());
+  //     chart = new d3.line_ev(true_values, aggregate_data, dataset, options);
+  //     chart.render_chart(960, 500, d3.select("svg"));
+  //     d3.select("#canvasClear").on("click", function () {
+  //       d3.select("#canvasSubmit").attr("disabled", false);
+  //       d3.select("svg").selectAll("*").remove();
+  //       d3.selectAll('.feedback a').attr("class", "abled")
+  //       d3.selectAll('.show_agg a').attr("class", "abled")
+  //       document.getElementById('canvasSubmit').innerHTML = "I'm done"
+  //       make_experiment(dataset);
+  //     });
+  //   });
+
+  var true_values = dataset;
+  chart = new d3.line_ev(true_values, aggregate_data, dataset, options);
+  chart.render_chart(960, 500, d3.select("svg"));
+  d3.select("#canvasClear").on("click", function () {
+    d3.select("#canvasSubmit").attr("disabled", false);
+    d3.select("svg").selectAll("*").remove();
+    d3.selectAll('.feedback a').attr("class", "abled")
+    d3.selectAll('.show_agg a').attr("class", "abled")
+    document.getElementById('canvasSubmit').innerHTML = "I'm done"
+    make_experiment(dataset, dataset_label);
+  });
 };
 
 export function collect_user_guess() {

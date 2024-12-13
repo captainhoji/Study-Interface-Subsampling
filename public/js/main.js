@@ -3,6 +3,7 @@ import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.8.1/firebase-
 import { getDatabase, get, ref, set, update, push, child } from "https://www.gstatic.com/firebasejs/9.8.1/firebase-database.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.8.1/firebase-auth.js";
 import { make_experiment, collect_user_guess} from "./canvas.js"
+import { numToWords } from "./numToWords.js"
 
 //import { getStorage, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.8.1/firebase-storage.js";
 
@@ -37,63 +38,71 @@ var sid = 0; //stimuli index
 var time = TIME_LIMIT_SEC; //time taken in looking at the stimuli
 //var audio = new Audio('../beep.wav');
 
-var uid;
-var stimuliOrder;
-var conditionOrder;
+var uid, pid;
+var synth;
+var stimuliPlaying = false;
 var finishedSurvey = false;
 
 var utterId;
-var utterRate = 1.4;
+var utterRate = 1.0;
 var onStimuli = false;
 var skipButtonActivated = false;
 
-var datasets = [
+var sampleidx, sampleSize, dataArr, dataTransformArr, precision, dataset_label;
+var datasets = []
+var dataset_labels = [
   {
-    "display" : "Life Expectancy of Venezuela",
-    "true_values" : "data/s0.csv",
+    "display" : "Production Output of a Manufacturing Plant",
     "x_label" : "Year",
     "x_prop" : "Year",
-    "y_label" : "Life Expectancy (Age)",
-    "y_prop" : "Age",
-    "descriptor" : "This line chart shows how the life expectancy of Venezuela changed over time.",
+    "y_label" : "Product Count",
+    "y_prop" : "Count",
+    "x_unit" : "",
+    "y_unit" : "Products",
+    "descriptor" : "This line chart shows how the production output of a manufacturing plant changed over time"
   },
   {
-    "display" : "Military Expenditure of Argentina",
-    "true_values" : "data/s1.csv",
+    "display" : "Price of a Certain Stock",
     "x_label" : "Year",
     "x_prop" : "Year",
-    "y_label" : "Military Expenditure (Dollars)",
-    "y_prop" : "Military Expenditure (Dollars)",
-    "descriptor" : "This line chart shows how the military expenditure of Argentina changed over time.",
+    "y_label" : "Price (Dollars)",
+    "y_prop" : "Dollars",
+    "x_unit" : "",
+    "y_unit" : "Dollars",
+    "descriptor" : "This line chart shows how the price of a stock changed over time",
   },
   {
-    "display" : "Air Pollution in London",
-    "true_values" : "data/s2.csv",
+    "display" : "Energy Consumption in a Building ",
     "x_label" : "Year",
     "x_prop" : "Year",
-    "y_label" : "Suspended Particulate Matter (SPM)",
-    "y_prop" : "Suspended Particulate Matter (SPM)",
-    "descriptor" : "This line chart shows how the air pollution of London changed over time.",
+    "y_label" : "Consumption (Units)",
+    "y_prop" : "Units",
+    "x_unit" : "",
+    "y_unit" : "units",
+    "descriptor" : "This line chart shows how the energy consumption in a building changed over time",
   },
   {
-    "display" : "Alcohol Consumption of Americans",
-    "true_values" : "data/s3.csv",
+    "display" : "Water Usage in a Certain Area",
     "x_label" : "Year",
     "x_prop" : "Year",
-    "y_label" : "Alcohol Consumption per Individual (Liters)",
-    "y_prop" : "Alcohol Consumption per Capita (Liters)",
-    "descriptor" : "This line chart shows how the alcohol consumption of Americans changed over time.",
+    "y_label" : "Water Usage (Gallons)",
+    "y_prop" : "Gallons",
+    "x_unit" : "",
+    "y_unit" : "gallons",
+    "descriptor" : "This line chart shows how the water usage in a certain area changed over time",
   },
   {
-    "display" : "GDP of Costa Rica",
-    "true_values" : "data/s4.csv",
+    "display" : "Average Visitor Count to a Public Facility",
     "x_label" : "Year",
     "x_prop" : "Year",
-    "y_label" : "GDP per Capita (Dollars)",
-    "y_prop" : "GDP per Capita (Dollars)",
-    "descriptor" : "This line chart shows how the GDP of Costa Rica changed over time.",
-  },
+    "y_label" : "Visitor Count",
+    "y_prop" : "People",
+    "x_unit" : "",
+    "y_unit" : "", 
+    "descriptor" : "This line chart shows how the average visitor count to a public facility changed over time",
+  }
 ];
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
 export function main() {
 
@@ -105,7 +114,19 @@ export function main() {
         return;   
     }
 
-    var stimuli_condition_arr = $.csv.toArrays($('#stimuli-condition-csv').html())
+    synth = window.speechSynthesis;
+
+    for (let i = 1; i < 28; i++) {
+        fetch('../data/benchmark/dataset' + i + '.csv')
+        .then(response => response.text())
+        .then(text => {
+            let dataset = parseCSV(text)
+            datasets.push(dataset);
+            // console.log(dataset)
+        }); 
+    }
+
+    // var stimuli_condition_arr = $.csv.toArrays($('#stimuli-condition-csv').html())
 
     //Firebase Anonymous Auth
     const auth = getAuth();
@@ -119,7 +140,8 @@ export function main() {
     onAuthStateChanged(auth, (user) => {
         if (user) {
             uid = user.uid;
-            logger("user signed in: " + uid);
+            pid = getPid();
+            logger("user signed in. pid: " + pid);
         } else {
             if (!finishedSurvey) {
                 get(ref(database, 'users/count')).then((snapshot) => {
@@ -137,7 +159,7 @@ export function main() {
         get(ref(database, 'users')).then((snapshot) => {
             if (snapshot.exists()) {
                 var uidDict = snapshot.val();
-                if (!(uid in uidDict) || uid === "wm0pnZMYJGVrUjoAC902PRDVUSr1") {
+                if (!(uid in uidDict) || uid === "7BU31oIvAjRZ7pvObiRg815t2ZA3" || pid === "Louie") {
                     // Add uid to db uid list
                     set(ref(database, 'users/'+uid), false);
                     // increase counter
@@ -145,12 +167,9 @@ export function main() {
                     set(ref(database, 'users/count'), count + 1);
                     console.log("count: " + count);
                     // get stimuli and condition order
-                    var stimuliOrderStr = stimuli_condition_arr[count + 1][0]
-                    var conditionOrderStr = stimuli_condition_arr[count + 1][1]
-                    stimuliOrder = [stimuliOrderStr[0], stimuliOrderStr[1], stimuliOrderStr[2], stimuliOrderStr[3]];
-                    conditionOrder = [conditionOrderStr[0], conditionOrderStr[1], conditionOrderStr[2], conditionOrderStr[3]];
-                    console.log('stimuli: ' + stimuliOrder);
-                    console.log('condition: ' + conditionOrder);
+                    shuffleArray(dataset_labels);
+                    stimuliOrder = getRandomIntegers(0, 27, 5);
+                    console.log("stimuli: " + stimuliOrder);
                     show_demographicSurvey();
                 }
                 else if (uidDict[uid]) {
@@ -175,32 +194,50 @@ export function main() {
         return false;
     });
     $("#demographicSurvey_form").submit(submit_demographicSurvey);
-    $("#assessment_form").submit(submit_assessment);
     $("#canvasSubmit").click(submit_canvas);
     $("#feedback_form").submit(submit_feedback);
     $("#confirmation_form").submit(submit_confirmation);
 
+    $("#utter_start_button").click(function() {
+
+    });
+
+    var utter_test = new SpeechSynthesisUtterance("This is an example data. 2023, one million units")
     $("#rate_decrease_button").click(function() {
         utterRate -= 0.1;
         $("#utterRate").html(Math.round(utterRate * 10) / 10)
+        if (!stimuliPlaying) {
+            synth.cancel()
+            setTimeout(function() {
+                utter_test.rate = utterRate;
+                synth.speak(utter_test);
+            }, 250);
+        }
         return false;
     });
     $("#rate_increase_button").click(function() {
         utterRate += 0.1;
         $("#utterRate").html(Math.round(utterRate * 10) / 10)
+        if (!stimuliPlaying) {
+            synth.cancel()
+            setTimeout(function() {
+                utter_test.rate = utterRate;
+                synth.speak(utter_test);
+            }, 250);
+        }
         return false;
     });
 
     //keybind for data navigation
-    document.addEventListener('keydown', function(event) {
-        if (!onStimuli) return;
-        if(event.keyCode == 37) {
-            $("#utter_prev_button").click();
-        }
-        else if(event.keyCode == 39) {
-            $("#utter_next_button").click();
-        }
-    });
+    // document.addEventListener('keydown', function(event) {
+    //     if (!onStimuli) return;
+    //     if(event.keyCode == 37) {
+    //         $("#utter_prev_button").click();
+    //     }
+    //     else if(event.keyCode == 39) {
+    //         $("#utter_next_button").click();
+    //     }
+    // });
 
     window.onbeforeunload = function() { return "Your work will be lost."; };
 
@@ -216,15 +253,19 @@ function show_demographicSurvey() {
 function submit_demographicSurvey() {
     var gender = $("input[name='gender']:checked").val();
     var language = $("input[name='language']:checked").val();
+    var freq = $("input[name='encounter_frequency']:checked").val();
+    var hasImpairment = $("input[name='impairment']:checked").val();
 
     set(ref(database, 'survey/' + uid), {
         uid: uid,
-        condition_order: conditionOrder,
+        pid: pid,
         stimuli_order: stimuliOrder,
         gender: gender,
         education: $('#response_education').val(),
         age: $('#response_age').val(),
         english: language,
+        frequency: freq,
+        hasImpairment: hasImpairment,
         responses: []
     });
 
@@ -246,113 +287,100 @@ function show_ready() {
 
 function show_stimuli() {
     hide_all(); 
+    $('#skipbutton').prop("disabled",true);
     onStimuli = true;
 
     //Load appropriate data based on stimuli & condition
     var csvid;
-    var dataset;
-    if (sid == 0) {
-        csvid = '#s0-csv';
-        dataset = datasets[sid];
+    dataset_label = dataset_labels[sid]
+    dataArr = datasets[stimuliOrder[sid]];
+
+    var scale = getRandomFloat(1, 10)
+    var exp = getRandomInt(0, 6)
+    scale = scale * 10 ** exp
+    var transform = getRandomFloat(1, 10)
+    var transformexp = getRandomInt(-3, 0)
+    transform = transform * 10 ** transformexp
+    precision = 3 // getRandomInt(2,8)
+
+    if (dataset_label.x_prop == "Month") {
+        var startMonth = getRandomInt(0, 11)
+        var startYear = getRandomInt(1960, 2021)
+        dataTransformArr = dataArr.map(function(x) { return [ MONTHS[(Math.round(x[0] * 19) + startMonth)%12] + ", " + (startYear + Math.floor((Math.round(x[0] * 19) + startMonth)/12)),
+                                                                parseFloat(((Math.abs(x[1] + gaussianRandom(0, 0.05)) + transform) * scale).toPrecision(precision))]; })
     }
     else {
-        csvid = '#s';
-        var stimuli = stimuliOrder[sid-1];
-        csvid = csvid + stimuli;
-
-        var condition = conditionOrder[sid-1];
-        if (condition % 2 == 0) {
-            csvid = csvid + "-sampled";
-        }
-        if (condition > 2) {
-            csvid = csvid + "-rounded";
-        }
-        csvid = csvid + "-csv";
-
-        //Alter Title & Descriptions
-        $("#stimuli_title").html("Task " + sid);
-        dataset = datasets[stimuli];
+        var startYear = getRandomInt(1800, 2000)
+        var interval = getRandomInt(1, 5)
+        dataTransformArr = dataArr.map(function(x) { return [Math.round(x[0] * 19) * interval + startYear, 
+                                                                parseFloat(((Math.abs(x[1] + gaussianRandom(0, 0.05)) + transform) * scale).toPrecision(precision))]; });
+        $("#chart_startTime").html(startYear);
+        $("#chart_endTime").html(19 * interval + startYear);
     }
-    $("#chart_description").html(dataset["descriptor"]);
-    $("#chart_labelx").html(dataset["x_label"]);
-    $("#chart_labely").html(dataset["y_label"]);
+    
+    console.log(dataTransformArr)
 
-    var dataArr = $.csv.toArrays($(csvid).html())
+    sampleSize = getRandomInt(3, 20)
+    sampleidx = getSampleIdx(sampleSize, 19)
+    var sampleArr = []
+    for (const idx of sampleidx) {
+        sampleArr.push(dataTransformArr[idx])
+    }
+    console.log(sampleArr)
+    sampleArr = sampleArr.map(function(x) {return [formatYearForSpeech(x[0]), numToWords(x[1])];});
 
-    const synth = window.speechSynthesis
+    if (sid != 0) {
+        $("#stimuli_title").html("Task " + sid);
+    }
+    $("#chart_description").html(dataset_label["descriptor"]);
+    $("chart_samplesize").html(sampleSize);
+    $("#chart_labelx").html(dataset_label["x_label"]);
+    $("#chart_labely").html(dataset_label["y_label"]);
 
     var utterStart = new SpeechSynthesisUtterance("Start of data")
     var utterEnd = new SpeechSynthesisUtterance("End of data")
+    utterEnd.addEventListener("end", (event) => {
+        $('#skipbutton').html('Continue')
+        $('#skipbutton').prop("disabled",false);
+    });
 
     utterId = 0;
-    $("#utter_next_button").unbind()
-    $("#utter_prev_button").unbind()
-    $("#utter_next_button").click(function() {
-        var utt;
+    $('#utter_start_button').html("Start Playing");
+    $('#utter_start_button').prop("disabled",false);
+    $("#utter_start_button").unbind()
+    $("#utter_start_button").click(function() {
+        stimuliPlaying = true
+        var utt_list = [];
         synth.cancel()
-        utterId++;
-        if (utterId >= dataArr.length) {
-            utterId = dataArr.length;
-            utt = utterEnd;
+        for (let i = 0; i < sampleArr.length; i++) {
+            var utt = new SpeechSynthesisUtterance(sampleArr[i][0] + " " + dataset_label["x_unit"] + ", " + sampleArr[i][1] + " " + dataset_label["y_unit"])
+            if (i == sampleArr.length - 1) {
+                utt.addEventListener("end", (event) => {
+                    synth.speak(utterEnd)
+                    $('#utter_start_button').html("Finished Playing");
+                    stimuliPlaying = false
+                });
+            }
+            else {
+                utt.addEventListener("end", (event) => {
+                    synth.speak(utt_list[i+1])
+                });
+            }
+            utt.rate = utterRate;
+            utt_list.push(utt)
         }
-        else {
-            utt = new SpeechSynthesisUtterance(dataArr[utterId][0] + ", " + dataArr[utterId][1])
-        }
-        utt.rate = utterRate;
-        synth.speak(utt)
-        return false;
-    });
-    $("#utter_prev_button").click(function() {
-        var utt;
-        synth.cancel()
-        utterId--;
-        if (utterId <= 0) {
-            utterId = 0;
-            utt = utterStart;
-        }
-        else {
-            utt = new SpeechSynthesisUtterance(dataArr[utterId][0] + ", " + dataArr[utterId][1])
-        }
-        utt.rate = utterRate;
-        synth.speak(utt)
+        setTimeout(function() {
+             synth.speak(utt_list[0])
+        }, 500);
+        $('#utter_start_button').html("Playing...");
+        $('#utter_start_button').prop("disabled",true);
         return false;
     });
 
-    $("#timer_text").text(Math.floor(TIME_LIMIT_SEC/60) + " minutes " + TIME_LIMIT_SEC%60 + " seconds ");
     $("#stimuli").show();
-
-    var countDownDate = new Date(new Date().getTime() + (TIME_LIMIT_SEC * 1000));
-    skipButtonActivated = false;
-    $('#skipbutton').html('Need at least 3 minutes before you can skip!')
-    $('#skipbutton').prop("disabled",true);
-    // Update the countdown every 1 second
-    var timer = setInterval(function() {
-
-      var now = new Date().getTime();
-      var distance = countDownDate - now;
-
-      var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-      time = TIME_LIMIT_SEC - (minutes * 60 + seconds);
-
-      $("#timer_text").text(minutes + " minutes " + seconds + " seconds ");
-
-      if (!skipButtonActivated && minutes == 1) {
-        $('#skipbutton').html('Skip to task!')
-        $('#skipbutton').prop("disabled",false);
-        skipButtonActivated = true;
-      }
-
-      if (distance < 0) {
-        time = TIME_LIMIT_SEC;
-        show_assessment();
-        clearInterval(timer);
-      }
-    }, 1000);
-
     $("#skipbutton").click(function() {
         show_assessment();
-        clearInterval(timer);
+        // clearInterval(timer);
     });
 }
 
@@ -365,46 +393,37 @@ function show_assessment() {
     }
     $("#assessment").show();
 
-    if (sid == 0) {
-        make_experiment(datasets[0]);
-    }
-    else {
-        make_experiment(datasets[stimuliOrder[sid-1]]);
-    }
+    make_experiment(interpolatePoints(dataTransformArr), dataset_label);
     $("#canvasContainer").show();
 }
 
 // submitting user guess
 function submit_canvas() {
-    if (1 <= sid && sid <= 4) {
-        //convert user guess to csv string
-        var userData = collect_user_guess();
-        var csvstr = ""
-        userData.forEach(function(rowArray) {
-            let row = rowArray.join(",");
-            csvstr += row + "\r\n";
-        });
+    //convert user guess to csv string
+    var userData = collect_user_guess();
 
-        //post assessment+canvas data to db
-        var postData = {
-            timestamp: getDateTime(),
-            stimuli: stimuliOrder[sid-1],
-            condition: conditionOrder[sid-1],
-            time: time,
-            order: sid,
-            Q0: $("#response_Q0").val(),
-            Q1: $("#response_Q1").val(),
-            Q2: $("#response_Q2").val(),
-            Q3: $("#response_Q3").val(),
-            Q4: $("#response_Q4").val(),
-            Q5: $("#response_Q5").val(),
-            Q6: $("#response_Q6").val(),
-            Q7: csvstr
-        };
-        const dataRef = ref(database, 'survey/' + uid + '/responses');
-        const newPostRef = push(dataRef);
-        set(newPostRef, postData);   
-    }
+    //post assessment+canvas data to db
+    var postData = {
+        timestamp: getDateTime(),
+        stimuli: stimuliOrder[sid],
+        dataArr: arrToCSVString(dataTransformArr),
+        sampleidx: sampleidx.join(","),
+        size: sampleSize,
+        time: time,
+        order: sid,
+        // precision: precision,
+        // Q0: $("#response_Q0").val(),
+        // Q1: $("#response_Q1").val(),
+        // Q2: $("#response_Q2").val(),
+        // Q3: $("#response_Q3").val(),
+        // Q4: $("#response_Q4").val(),
+        // Q5: $("#response_Q5").val(),
+        // Q6: $("#response_Q6").val(),
+        Q7: arrToCSVString(userData)
+    };
+    const dataRef = ref(database, 'survey/' + uid + '/responses');
+    const newPostRef = push(dataRef);
+    set(newPostRef, postData);   
 
     if (sid == 4) { // end of task
         show_feedback();
@@ -427,7 +446,9 @@ function submit_feedback() {
     };
     const dataRef = ref(database, 'users/' + uid + '/feedback');
     set(dataRef, postData);
-    show_confirmation();
+    // show_confirmation();
+    hide_all();
+    submit_confirmation();
 }
 
 function show_confirmation() {
@@ -506,3 +527,126 @@ function getDateTime() {
     return dateTime;
 }
 
+function parseCSV(text) {
+    // Parse the CSV text
+    const lines = text.split('\n');
+    var df = []
+    lines.forEach(line => {
+        if (line.length != 0 && line.indexOf('x') < 0) {
+            var row = line.replace(/(\r\n|\n|\r)/gm, "").split(',');
+            row = row.map(item => parseFloat(item)) 
+            df.push(row)
+        }
+    });
+    return df
+}
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function sampleArr(arr, k) {
+
+}
+
+function getSampleIdx(n, len) {
+    const uniqueIntegers = new Set();
+
+    while (uniqueIntegers.size < n) {
+        uniqueIntegers.add(getRandomInt(0, len));
+    }
+
+    return Array.from(uniqueIntegers).sort((a, b) => a - b);
+}
+
+function getRandomInt(x, y) {
+    return Math.floor(Math.random() * (y - x + 1)) + x;
+}
+
+function getRandomFloat(x, y) {
+    return Math.random() * (y - x) + x;
+}
+
+function getRandomIntegers(min, max, count) {
+    let arr = [];
+    for (let i = min; i <= max; i++) {
+        arr.push(i);
+    }
+    shuffleArray(arr)
+    return arr.slice(0, count);
+}
+
+function gaussianRandom(mean=0, stdev=1) {
+    const u = 1 - Math.random(); // Converting [0,1) to (0,1]
+    const v = Math.random();
+    const z = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+    // Transform to the desired mean and standard deviation:
+    return z * stdev + mean;
+}
+
+function interpolatePoints(points) {
+    var interpolatedPoints = [];
+
+    for (var i = 0; i < points.length - 1; i++) {
+        var start = points[i];
+        var end = points[i + 1];
+
+        interpolatedPoints.push(start); // Include the start point
+
+        // Interpolate intermediate points
+        for (var t = 0.2; t < 1; t += 0.2) {
+            var interpolatedX = start[0] + t * (end[0] - start[0]);
+            var interpolatedY = start[1] + t * (end[1] - start[1]);
+            interpolatedPoints.push([interpolatedX, interpolatedY]);
+        }
+    }
+
+    interpolatedPoints.push(points[points.length - 1]); // Include the end point
+
+    return interpolatedPoints;
+}
+
+function arrToCSVString(arr) {
+    var csvstr = ""
+    arr.forEach(function(rowArray) {
+        let row = rowArray.join(",");
+        csvstr += row + "\r\n";
+    });
+    return csvstr
+}
+
+function getPid() {
+    // Create URLSearchParams object from the current window's URL
+    const params = new URLSearchParams(window.location.search);
+
+    // Get individual parameters using .get()
+    const pid = params.get('PROLIFIC_PID'); // 'value1'
+    // const param2 = params.get('param2'); // 'value2'
+
+    return pid;
+}
+
+function generateLogarithmicRandomNumber() {
+    // Generate a random number between 0 and 1
+    var randomNumber = Math.random();
+
+    // Transform this number logarithmically
+    var logNumber = Math.pow(10, randomNumber * Math.log10(10));
+
+    return logNumber;
+}
+
+function formatYearForSpeech(year) {
+    // Convert the year to a string
+    let yearStr = year.toString();
+
+    // Split the year into two parts if it's a four-digit year
+    if (yearStr.length === 4) {
+        return yearStr.substring(0, 2) + " " + yearStr.substring(2);
+    }
+
+    return yearStr;
+}
